@@ -7,15 +7,14 @@ CFLAGS = -c -Wall
 #ds default field
 all: main
 
-	$(CC) bin/CVector.o bin/CCubicDomain.o bin/main.o -o bin/nbody_cpu
+	$(CC) bin/CDomain.o bin/main.o -o bin/diffusion_serial
 
 #ds object files
 main:
 
 	rm -rf bin
 	mkdir bin
-	$(CC) $(CFLAGS) src/CVector.cpp -o bin/CVector.o
-	$(CC) $(CFLAGS) src/CCubicDomain.cpp -o bin/CCubicDomain.o
+	$(CC) $(CFLAGS) src/CDomain.cpp -o bin/CDomain.o
 	$(CC) $(CFLAGS) src/main.cpp -o bin/main.o
 
 #ds mark clean as independent
