@@ -48,7 +48,7 @@ open( writerObj );
 disp( [ 'timestep: ', num2str( 1 ) ] );
 
 %ds create initial data with the first timestep
-contour( squeeze( matHeatGrid( 1, :, : ) ), 25 );
+contour( squeeze( matHeatGrid( 1, :, : ) ), 10 );
 set( gca, 'nextplot' ,'replacechildren' );
 set( gcf, 'Renderer' ,'zbuffer' );
 
@@ -60,7 +60,7 @@ for uCurrentTimestep = 2:1:uNumberOfTimesteps
         
         %ds create a figure
         matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );
-        contour( matTemp, 25 );
+        contour( matTemp, 10 );
         frame = getframe( gcf );
         writeVideo( writerObj, frame );
 
