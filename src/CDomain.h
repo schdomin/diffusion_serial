@@ -35,20 +35,7 @@ public:
         }
 
         //ds initialize grid
-        setHeatDistribution( 0.0 );
-
-        //ds allocate solving vectors
-        m_vecA = new double[m_uNumberOfGridPoints1D];
-        m_vecB = new double[m_uNumberOfGridPoints1D];
-        m_vecC = new double[m_uNumberOfGridPoints1D];
-
-        //ds set values of implicit solver vectors
-        for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
-        {
-            m_vecA[u] =    m_dTimeStepSize*m_dDiffusionCoefficient/( p_dGridPointSpacing*p_dGridPointSpacing );
-            m_vecB[u] =  1-m_dTimeStepSize*m_dDiffusionCoefficient/( p_dGridPointSpacing*p_dGridPointSpacing );
-            m_vecC[u] = -m_dTimeStepSize/2*m_dDiffusionCoefficient/( p_dGridPointSpacing*p_dGridPointSpacing );
-        }
+        setHeatDistribution( );
     };
 
     ~CDomain( )
@@ -60,11 +47,6 @@ public:
         }
 
         delete[] m_gridHeat;
-
-        //ds and support structures
-        delete[] m_vecA;
-        delete[] m_vecB;
-        delete[] m_vecC;
     };
 
 //ds attributes
@@ -79,11 +61,6 @@ private:
     const double m_dGridPointSpacing;
     const unsigned int m_uNumberOfGridPoints1D;
     const double m_dTimeStepSize;
-
-    //ds fixed structures for implicit solution
-    double* m_vecA;
-    double* m_vecB;
-    double* m_vecC;
 
     //ds stream for offline data - needed for the movie and graphs
     std::string m_strHeatInformation;
@@ -102,6 +79,17 @@ public:
             //ds structures for implicit equation system (values set to 0 per default)
             double vecNewHeat[m_uNumberOfGridPoints1D];
             double vecPrevHeat[m_uNumberOfGridPoints1D];
+            double vecA[m_uNumberOfGridPoints1D];
+            double vecB[m_uNumberOfGridPoints1D];
+            double vecC[m_uNumberOfGridPoints1D];
+
+            //ds set values of implicit solver vectors
+            for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
+            {
+                vecA[u] =    m_dTimeStepSize*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+                vecB[u] =  1-m_dTimeStepSize*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+                vecC[u] = -m_dTimeStepSize/2*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+            }
 
             //ds for the current column loop over all rows
             for( unsigned int j = 0; j < m_uNumberOfGridPoints1D; ++j )
@@ -118,7 +106,7 @@ public:
             }
 
             //ds compute the solution for all current rows
-            solveMatrix( m_uNumberOfGridPoints1D, m_vecA, m_vecB, m_vecC, vecPrevHeat, vecNewHeat );
+            solveMatrix( m_uNumberOfGridPoints1D, vecA, vecB, vecC, vecPrevHeat, vecNewHeat );
 
             //ds add the new part in x direction
             for( unsigned int j = 0; j < m_uNumberOfGridPoints1D; ++j )
@@ -128,12 +116,23 @@ public:
             }
         }
 
-        /*ds STEP 2: loop over all indexi (i and j are used to conform with exercise parameters)
+        //ds STEP 2: loop over all indexi (i and j are used to conform with exercise parameters)
         for( unsigned int j = 0; j < m_uNumberOfGridPoints1D; ++j )
         {
             //ds structures for implicit equation system (values set to 0 per default)
             double vecNewHeat[m_uNumberOfGridPoints1D];
             double vecPrevHeat[m_uNumberOfGridPoints1D];
+            double vecA[m_uNumberOfGridPoints1D];
+            double vecB[m_uNumberOfGridPoints1D];
+            double vecC[m_uNumberOfGridPoints1D];
+
+            //ds set values of implicit solver vectors
+            for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
+            {
+                vecA[u] =    m_dTimeStepSize*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+                vecB[u] =  1-m_dTimeStepSize*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+                vecC[u] = -m_dTimeStepSize/2*m_dDiffusionCoefficient/( m_dGridPointSpacing*m_dGridPointSpacing );
+            }
 
             //ds for the current column loop over all rows
             for( unsigned int i = 0; i < m_uNumberOfGridPoints1D; ++i )
@@ -150,7 +149,7 @@ public:
             }
 
             //ds compute the solution for all current columns
-            solveMatrix( m_uNumberOfGridPoints1D, m_vecA, m_vecB, m_vecC, vecPrevHeat, vecNewHeat );
+            solveMatrix( m_uNumberOfGridPoints1D, vecA, vecB, vecC, vecPrevHeat, vecNewHeat );
 
             //ds add the new part in y direction
             for( unsigned int i = 0; i < m_uNumberOfGridPoints1D; ++i )
@@ -158,7 +157,7 @@ public:
                 //ds directly add to the new heat grid
                 gridHeatNew[i][j] += vecNewHeat[i];
             }
-        }*/
+        }
 
         //ds STEP 3: update main heat grid
         for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
@@ -168,6 +167,9 @@ public:
                 m_gridHeat[u][v] = gridHeatNew[u][v];
             }
         }
+
+        //ds and clear boundaries
+        clearBoundaries( );
     }
 
     void saveHeatGridToStream( )
@@ -215,7 +217,7 @@ public:
 //ds helpers
 private:
 
-    void setHeatDistribution( const double& p_dT )
+    void setHeatDistribution( const double& p_dT = 0.0 )
     {
         //ds loop over all indexi
         for( unsigned int uX = 0; uX < m_uNumberOfGridPoints1D; ++uX )
@@ -230,36 +232,34 @@ private:
                 m_gridHeat[uX][uY] = getHeat( dX, dY, p_dT );
             }
         }
+
+        //ds and clean up borders
+        clearBoundaries( );
     }
 
     double getHeat( const double& p_dX, const double& p_dY, const double& p_dT ) const
     {
-        //ds check for boundary condition
-        if( m_prBoundaries.first  == p_dX || m_prBoundaries.first  == p_dY ||
-            m_prBoundaries.second == p_dX || m_prBoundaries.second == p_dY )
-        {
-            return 0.0;
-        }
-        else
-        {
-            //ds formula provided
-            return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT );
-        }
+        //ds formula provided
+        return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT );
     }
 
     //ds doubly derived heat (by x or y)
     double getHeatDD( const double& p_dX, const double& p_dY, const double& p_dT ) const
     {
-        //ds check for boundary condition
-        if( m_prBoundaries.first  == p_dX || m_prBoundaries.first  == p_dY ||
-            m_prBoundaries.second == p_dX || m_prBoundaries.second == p_dY )
+        //ds formula provided
+        return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT )*( -4*M_PI*M_PI );
+    }
+
+    //ds boundary conditions
+    void clearBoundaries( )
+    {
+        //ds clear all trivial rows
+        for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
         {
-            return 0.0;
-        }
-        else
-        {
-            //ds formula provided
-            return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT )*( -4*M_PI*M_PI );
+            m_gridHeat[u][0]                         = 0.0;
+            m_gridHeat[u][m_uNumberOfGridPoints1D-1] = 0.0;
+            m_gridHeat[0][u]                         = 0.0;
+            m_gridHeat[m_uNumberOfGridPoints1D-1][u] = 0.0;
         }
     }
 

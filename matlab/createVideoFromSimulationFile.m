@@ -1,5 +1,7 @@
 function createVideoFromSimulationFile( )
 
+clear;
+
 %ds filepath
 strFilepath = '../bin/simulation.txt';
 
@@ -41,7 +43,7 @@ disp( [ 'finished data import - time: ', num2str( toc ) ] );
 
 %ds prepare video writer
 writerObj = VideoWriter('simulation.avi');
-writerObj.FrameRate = 100;
+writerObj.FrameRate = 25;
 open( writerObj );
 disp( [ 'timestep: ', num2str( 1 ) ] );
 
@@ -53,14 +55,18 @@ set( gcf, 'Renderer' ,'zbuffer' );
 % %ds for each remaining timestep
 for uCurrentTimestep = 2:1:uNumberOfTimesteps
     
-    %ds create a figure
-    matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );
-    contour( matTemp, 25 );
-    frame = getframe( gcf );
-    writeVideo( writerObj, frame );
+    %ds only save every 10th frame instead 500 -> 25 frames per sec
+    if mod( uCurrentTimestep, 10 ) == 0
+        
+        %ds create a figure
+        matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );
+        contour( matTemp, 25 );
+        frame = getframe( gcf );
+        writeVideo( writerObj, frame );
 
-    disp( [ 'timestep: ', num2str( uCurrentTimestep ) ] );
-    
+        disp( [ 'timestep: ', num2str( uCurrentTimestep ) ] );
+
+    end
 end
 
 %ds write video file
