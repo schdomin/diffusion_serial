@@ -23,7 +23,10 @@ public:
                                                m_prBoundaries( p_prBoundaries ),
                                                m_dGridPointSpacing( p_dGridPointSpacing ),
                                                m_uNumberOfGridPoints1D( ceil( fabs( p_prBoundaries.first )+fabs( p_prBoundaries.second ) )/m_dGridPointSpacing+1 ),
-                                               m_dTimeStepSize( p_dTimeStepSize )
+                                               m_dTimeStepSize( p_dTimeStepSize ),
+                                               m_strLogHeatDistribution( "" ),
+                                               m_strLogTotalHeat( "" )
+
     {
         //ds allocate memory for the data structure
         m_gridHeat = new double*[m_uNumberOfGridPoints1D];
@@ -63,7 +66,8 @@ private:
     const double m_dTimeStepSize;
 
     //ds stream for offline data - needed for the movie and graphs
-    std::string m_strHeatInformation;
+    std::string m_strLogHeatDistribution;
+    std::string m_strLogTotalHeat;
 
 //ds accessors
 public:
@@ -186,13 +190,39 @@ public:
                 std::snprintf( chBuffer, 16, "%f", m_gridHeat[u][v] );
 
                 //ds add buffer and space to string
-                m_strHeatInformation += chBuffer;
-                m_strHeatInformation += " ";
+                m_strLogHeatDistribution += chBuffer;
+                m_strLogHeatDistribution += " ";
             }
 
             //ds add new line for new row
-            m_strHeatInformation += '\n';
+            m_strLogHeatDistribution += '\n';
         }
+    }
+
+    void saveTotalHeatToStream( )
+    {
+        //ds get total heat
+        double dTotalHeat( 0.0 );
+
+        //ds for all grid points
+        for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
+        {
+            for( unsigned int v = 0; v < m_uNumberOfGridPoints1D; ++v )
+            {
+                //ds add the current heat value
+                dTotalHeat += m_gridHeat[u][v];
+            }
+        }
+
+        //ds buffer for snprintf
+        char chBuffer[16];
+
+        //ds get the integrals stream
+        std::snprintf( chBuffer, 16, "%f", dTotalHeat );
+
+        //ds append the buffer to our string
+        m_strLogTotalHeat += chBuffer;
+        m_strLogTotalHeat += "\n";
     }
 
     void writeHeatGridToFile( const std::string& p_strFilename, const unsigned int& p_uNumberOfTimeSteps ) const
@@ -207,7 +237,26 @@ public:
         if( ofsFile.is_open( ) )
         {
             //ds first dump setup information number of points and time steps
-            ofsFile << m_uNumberOfGridPoints1D << " " << p_uNumberOfTimeSteps << "\n" << m_strHeatInformation;
+            ofsFile << m_uNumberOfGridPoints1D << " " << p_uNumberOfTimeSteps << "\n" << m_strLogHeatDistribution;
+        }
+
+        //ds close the file
+        ofsFile.close( );
+    }
+
+    void writeTotalHeatToFile( const std::string& p_strFilename, const unsigned int& p_uNumberOfTimeSteps, const double& p_dTimeStepSize )
+    {
+        //ds ofstream object
+        std::ofstream ofsFile;
+
+        //ds open the file for writing
+        ofsFile.open( p_strFilename.c_str( ), std::ofstream::out );
+
+        //ds if it worked
+        if( ofsFile.is_open( ) )
+        {
+            //ds dump information to file
+            ofsFile << p_uNumberOfTimeSteps << " " << p_dTimeStepSize << "\n" << m_strLogTotalHeat;
         }
 
         //ds close the file

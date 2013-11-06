@@ -52,10 +52,12 @@ int main( int argc, char** argv )
 
         //ds streaming
         cDomain.saveHeatGridToStream( );
+        cDomain.saveTotalHeatToStream( );
     }
 
     //ds save the stream to a file
     cDomain.writeHeatGridToFile( "bin/simulation.txt", uNumberOfTimeSteps );
+    cDomain.writeTotalHeatToFile( "bin/totalheat.txt", uNumberOfTimeSteps, dTimeStepSize );
 
     //ds stop timing
     const double dDurationSeconds( tmTimer.stop( ) );
