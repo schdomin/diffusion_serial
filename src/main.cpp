@@ -10,7 +10,7 @@ int main( int argc, char** argv )
     const double dDiffusionCoefficient( 1.0 );
     const std::pair< double, double > prBoundaries( 0.0, 1.0 );
     const double dGridPointSpacing( 0.01 );
-    const unsigned int uNumberOfTimeSteps( 100 );
+    const unsigned int uNumberOfTimeSteps( 5000 );
     const double dTimeStepSize( 0.5*dGridPointSpacing*dGridPointSpacing/dDiffusionCoefficient );
 
     //ds user information

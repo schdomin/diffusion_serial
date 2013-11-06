@@ -1,4 +1,4 @@
-function createIntegralsGraphs( )
+function createTotalHeatGraph( )
 
 %ds filepath
 strFilepath = '../bin/totalheat.txt';

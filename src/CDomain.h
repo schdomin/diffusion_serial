@@ -39,17 +39,15 @@ public:
         }
 
         //ds initialize grid
-        setHeatDistribution( );
+        setInitialHeatDistribution( );
 
         //ds allocate memory for the support structure
         m_matCoefficients = new double*[3];
 
-        //ds for the 3 diagonals
-        m_matCoefficients[0] = new double[m_uNumberOfGridPoints1D-1];
+        //ds and for the 3 diagonals
+        m_matCoefficients[0] = new double[m_uNumberOfGridPoints1D];
         m_matCoefficients[1] = new double[m_uNumberOfGridPoints1D];
-        m_matCoefficients[2] = new double[m_uNumberOfGridPoints1D-1];
-
-        computeCoefficients( );
+        m_matCoefficients[2] = new double[m_uNumberOfGridPoints1D];
     };
 
     ~CDomain( )
@@ -75,15 +73,15 @@ private:
     //ds heat structure - we use a standard structure since the constant size is known at allocation and we benefit from access speed
     double** m_gridHeat;
 
+    //ds coefficient matrix
+    double** m_matCoefficients;
+
     //domain properties
     const double m_dDiffusionCoefficient;
     const std::pair< double, double > m_prBoundaries;
     const double m_dGridPointSpacing;
     const unsigned int m_uNumberOfGridPoints1D;
     const double m_dTimeStepSize;
-
-    //ds coefficient matrix
-    double** m_matCoefficients;
     const double m_dDiffusionFactor;
 
     //ds stream for offline data - needed for the movie and graphs
@@ -102,9 +100,6 @@ public:
             double vecNewHeat[m_uNumberOfGridPoints1D];
             double vecPreviousHeat[m_uNumberOfGridPoints1D];
 
-            //ds updates coefficient matrix
-            computeCoefficients( );
-
             //ds boundaries
             vecPreviousHeat[0]                         = 0.0;
             vecPreviousHeat[m_uNumberOfGridPoints1D-1] = 0.0;
@@ -113,8 +108,11 @@ public:
             for( unsigned int i = 1; i < m_uNumberOfGridPoints1D-1; ++i )
             {
                 //ds get previous heat
-                vecPreviousHeat[i] = m_gridHeat[i][j] + m_dDiffusionFactor*( m_gridHeat[i-1][j] - 2*m_gridHeat[i][j] + m_gridHeat[i+1][j] );
+                vecPreviousHeat[i] = m_gridHeat[i][j] + m_dDiffusionFactor*( m_gridHeat[i+1][j] - 2*m_gridHeat[i][j] + m_gridHeat[i-1][j] );
             }
+
+            //ds update coefficient matrix
+            computeCoefficients( );
 
             //ds compute the new heat
             solveMatrix( m_uNumberOfGridPoints1D, m_matCoefficients[0], m_matCoefficients[1], m_matCoefficients[2], vecPreviousHeat, vecNewHeat );
@@ -133,9 +131,6 @@ public:
             double vecNewHeat[m_uNumberOfGridPoints1D];
             double vecPreviousHeat[m_uNumberOfGridPoints1D];
 
-            //ds updates coefficient matrix
-            computeCoefficients( );
-
             //ds boundaries
             vecPreviousHeat[0]                         = 0.0;
             vecPreviousHeat[m_uNumberOfGridPoints1D-1] = 0.0;
@@ -144,8 +139,11 @@ public:
             for( unsigned int j = 1; j < m_uNumberOfGridPoints1D-1; ++j )
             {
                 //ds get previous heat
-                vecPreviousHeat[j] = m_gridHeat[i][j] + m_dDiffusionFactor*( m_gridHeat[i][j-1] - 2*m_gridHeat[i][j] + m_gridHeat[i][j+1] );
+                vecPreviousHeat[j] = m_gridHeat[i][j] + m_dDiffusionFactor*( m_gridHeat[i][j+1] - 2*m_gridHeat[i][j] + m_gridHeat[i][j-1] );
             }
+
+            //ds updates coefficient matrix
+            computeCoefficients( );
 
             //ds compute the new heat
             solveMatrix( m_uNumberOfGridPoints1D, m_matCoefficients[0], m_matCoefficients[1], m_matCoefficients[2], vecPreviousHeat, vecNewHeat );
@@ -248,36 +246,19 @@ public:
 //ds helpers
 private:
 
-    void setHeatDistribution( const double& p_dT = 0.0 )
+    void setInitialHeatDistribution( )
     {
         //ds loop over all indexi
         for( unsigned int uX = 0; uX < m_uNumberOfGridPoints1D; ++uX )
         {
             for( unsigned int uY = 0; uY < m_uNumberOfGridPoints1D; ++uY )
             {
-                //ds transform coordinates
-                const double dX( static_cast< double >( uX )/m_uNumberOfGridPoints1D );
-                const double dY( static_cast< double >( uY )/m_uNumberOfGridPoints1D );
-
-                //ds set heat value
-                m_gridHeat[uX][uY] = getHeat( dX, dY, p_dT );
+                //ds set initial heat value
+                m_gridHeat[uX][uY] = sin( uX*m_dGridPointSpacing*2*M_PI )*sin( uY*m_dGridPointSpacing*2*M_PI );
             }
         }
 
-        //ds and clean up borders
-        clearBoundaries( );
-    }
-
-    double getHeat( const double& p_dX, const double& p_dY, const double& p_dT ) const
-    {
-        //ds formula provided
-        return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT );
-    }
-
-    //ds boundary conditions
-    void clearBoundaries( )
-    {
-        //ds clear all trivial rows
+        //ds set boundaries
         for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
         {
             m_gridHeat[u][0]                         = 0.0;
@@ -287,10 +268,16 @@ private:
         }
     }
 
+    double getHeat( const double& p_dX, const double& p_dY, const double& p_dT ) const
+    {
+        //ds formula provided
+        return sin( p_dX*2*M_PI )*sin( p_dY*2*M_PI )*exp( -8*m_dDiffusionCoefficient*M_PI*M_PI*p_dT );
+    }
+
     void computeCoefficients( )
     {
         //ds set the coefficients
-        for( unsigned int u = 1; u < m_uNumberOfGridPoints1D-1; ++u )
+        for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
         {
             //ds lower, main and upper diagonal
             m_matCoefficients[0][u] = -m_dDiffusionFactor;
@@ -298,16 +285,19 @@ private:
             m_matCoefficients[2][u] = -m_dDiffusionFactor;
         }
 
-        //ds additional element for main diagonal
-        m_matCoefficients[1][m_uNumberOfGridPoints1D-2] = 1+2*m_dDiffusionFactor;
-
-        //ds boundaries
-        m_matCoefficients[0][0]                         = 0.0;
+        //main diagonal boundary condition
         m_matCoefficients[1][0]                         = 1.0;
-        m_matCoefficients[2][0]                         = 0.0;
-        m_matCoefficients[0][m_uNumberOfGridPoints1D-2] = 0.0;
         m_matCoefficients[1][m_uNumberOfGridPoints1D-1] = 1.0;
-        m_matCoefficients[2][m_uNumberOfGridPoints1D-2] = 0.0;
+
+        //ds sub diagonal
+        m_matCoefficients[0][0]                         = 0.0;
+        m_matCoefficients[0][m_uNumberOfGridPoints1D-1] = 0.0;
+        m_matCoefficients[0][m_uNumberOfGridPoints1D-2] = 0.0; //length n-1
+
+        //ds sup diagonal
+        m_matCoefficients[2][0]                         = 0.0;
+        m_matCoefficients[2][m_uNumberOfGridPoints1D-1] = 0.0;
+        m_matCoefficients[2][m_uNumberOfGridPoints1D-2] = 0.0; //length n-1
     }
 
     //ds snippet from exercise sheet 1:1

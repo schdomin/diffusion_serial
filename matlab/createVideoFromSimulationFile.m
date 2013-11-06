@@ -55,8 +55,8 @@ set( gcf, 'Renderer' ,'zbuffer' );
 % %ds for each remaining timestep
 for uCurrentTimestep = 2:1:uNumberOfTimesteps
     
-    %ds only save every 10th frame instead 500 -> 25 frames per sec
-    %if mod( uCurrentTimestep, 10 ) == 0
+    %ds only save every 20th frame instead 500 -> 25 frames per sec
+    if mod( uCurrentTimestep, 20 ) == 0
         
         %ds create a figure
         matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );
@@ -66,7 +66,7 @@ for uCurrentTimestep = 2:1:uNumberOfTimesteps
 
         disp( [ 'timestep: ', num2str( uCurrentTimestep ) ] );
 
-    %end
+    end
 end
 
 %ds write video file
