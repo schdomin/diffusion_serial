@@ -10,7 +10,7 @@ int main( int argc, char** argv )
     const double dDiffusionCoefficient( 1.0 );
     const std::pair< double, double > prBoundaries( 0.0, 1.0 );
     const double dGridPointSpacing( 0.01 );
-    const unsigned int uNumberOfTimeSteps( 5000 );
+    const unsigned int uNumberOfTimeSteps( 4000 );
     const double dTimeStepSize( 0.5*dGridPointSpacing*dGridPointSpacing/dDiffusionCoefficient );
 
     //ds user information
@@ -26,13 +26,16 @@ int main( int argc, char** argv )
     Diffusion::CDomain cDomain( dDiffusionCoefficient, prBoundaries, dGridPointSpacing, dTimeStepSize );
 
     //ds information
-    std::cout << "               Status:  0% done - current step: 0";
+    std::cout << "               Status:  0% done - current time: 0";
 
     //ds start simulation
     for( unsigned int uCurrentTimeStep = 1; uCurrentTimeStep < uNumberOfTimeSteps+1; ++uCurrentTimeStep )
     {
         //ds calculate percentage done
         const double dPercentageDone( 100.0*uCurrentTimeStep/uNumberOfTimeSteps );
+
+        //ds and time
+        const double dCurrentTime( uCurrentTimeStep*dTimeStepSize );
 
         //ds get a formatted string -> 100% -> 3 digits
         char chBuffer[4];
@@ -42,20 +45,19 @@ int main( int argc, char** argv )
 
         //ds print info
         std::cout << '\xd';
-        std::cout << "               Status: " << chBuffer << "% done - current step: " << uCurrentTimeStep;
+        std::cout << "               Status: " << chBuffer << "% done - current time: " << dCurrentTime;
 
         //ds update domain
         cDomain.updateHeatDistributionNumerical( );
-        //cDomain.updateHeatDistributionAnalytical( uCurrentTimeStep*dTimeStepSize );
 
         //ds streaming
         cDomain.saveHeatGridToStream( );
-        cDomain.saveTotalHeatToStream( );
+        cDomain.saveNormsToStream( dCurrentTime );
     }
 
     //ds save the stream to a file
     cDomain.writeHeatGridToFile( "bin/simulation.txt", uNumberOfTimeSteps );
-    cDomain.writeTotalHeatToFile( "bin/totalheat.txt", uNumberOfTimeSteps, dTimeStepSize );
+    cDomain.writeNormsToFile( "bin/norms.txt", uNumberOfTimeSteps, dTimeStepSize );
 
     //ds stop timing
     const double dDurationSeconds( tmTimer.stop( ) );
