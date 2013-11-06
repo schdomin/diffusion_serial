@@ -10,7 +10,7 @@ int main( int argc, char** argv )
     const double dDiffusionCoefficient( 1.0 );
     const std::pair< double, double > prBoundaries( 0.0, 1.0 );
     const double dGridPointSpacing( 0.01 );
-    const unsigned int uNumberOfTimeSteps( 1000 );
+    const unsigned int uNumberOfTimeSteps( 100 );
     const double dTimeStepSize( 0.5*dGridPointSpacing*dGridPointSpacing/dDiffusionCoefficient );
 
     //ds user information
@@ -44,11 +44,8 @@ int main( int argc, char** argv )
         std::cout << '\xd';
         std::cout << "               Status: " << chBuffer << "% done - current step: " << uCurrentTimeStep;
 
-        //ds current time
-        const double dCurrentTime( uCurrentTimeStep*dTimeStepSize );
-
         //ds update domain
-        cDomain.updateHeatDistribution( dCurrentTime );
+        cDomain.updateHeatDistribution( );
 
         //ds streaming
         cDomain.saveHeatGridToStream( );
