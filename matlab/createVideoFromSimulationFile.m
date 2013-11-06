@@ -56,7 +56,7 @@ set( gcf, 'Renderer' ,'zbuffer' );
 for uCurrentTimestep = 2:1:uNumberOfTimesteps
     
     %ds only save every 20th frame instead 500 -> 25 frames per sec
-    if mod( uCurrentTimestep, 20 ) == 0
+    if mod( uCurrentTimestep, 10 ) == 0
         
         %ds create a figure
         matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );

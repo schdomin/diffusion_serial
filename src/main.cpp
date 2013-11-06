@@ -45,7 +45,8 @@ int main( int argc, char** argv )
         std::cout << "               Status: " << chBuffer << "% done - current step: " << uCurrentTimeStep;
 
         //ds update domain
-        cDomain.updateHeatDistribution( );
+        cDomain.updateHeatDistributionNumerical( );
+        //cDomain.updateHeatDistributionAnalytical( uCurrentTimeStep*dTimeStepSize );
 
         //ds streaming
         cDomain.saveHeatGridToStream( );
