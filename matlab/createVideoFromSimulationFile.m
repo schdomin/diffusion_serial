@@ -47,9 +47,25 @@ open( writerObj );
 disp( [ 'timestep: ', num2str( 1 ) ] );
 
 %ds create initial data with the first timestep
-contour( squeeze( matHeatGrid( 1, :, : ) ), 50 );
+matInitial = squeeze( matHeatGrid( 1, :, : ) );
+
+%ds get max/min value for constant color mapping
+dMaxValue = max( max( matInitial ) );
+dMinValue = abs( min( min( matInitial ) ) );
+
+%ds shift the whole matrix so the minimum value is zero
+matHeatGrid = matHeatGrid + dMinValue;
+
+%ds also shift the max value
+dMaxValue = dMaxValue + dMinValue;
+
+%ds plot first frame
+contourf( matInitial, 100, 'LineColor', 'none' );
+caxis([ 0 dMaxValue ]);
 set( gca, 'nextplot' ,'replacechildren' );
+set( gca, 'color', [0.5, 1, 0.5] );
 set( gcf, 'Renderer' ,'zbuffer' );
+%set( gcf, 'LineStyle', 'none' );
 
 % %ds for each remaining timestep
 for uCurrentTimestep = 2:1:uNumberOfTimesteps
@@ -58,8 +74,8 @@ for uCurrentTimestep = 2:1:uNumberOfTimesteps
     if mod( uCurrentTimestep, 10 ) == 0
         
         %ds create a figure
-        matTemp = squeeze( matHeatGrid( uCurrentTimestep, :, : ) );
-        contour( matTemp, 50 );
+        contourf( squeeze( matHeatGrid( uCurrentTimestep, :, : ) ), 100, 'LineColor', 'none'  );
+        caxis([ 0 dMaxValue ]);
         frame = getframe( gcf );
         writeVideo( writerObj, frame );
 
