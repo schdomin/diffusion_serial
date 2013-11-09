@@ -29,6 +29,7 @@ int main( int argc, char** argv )
     std::cout << "\n---------------------------- DIFFUSION SERIAL SETUP ----------------------------" << std::endl;
     std::cout << "Diffusion Coefficient: " << dDiffusionCoefficient << std::endl;
     std::cout << "        Boundary (2D): [" << prBoundaries.first << ", " << prBoundaries.second << "]" << std::endl;
+    std::cout << "Number of Grid Points: " << uNumberOfGridPoints << std::endl;
     std::cout << "   Grid Point Spacing: " << dGridPointSpacing << std::endl;
     std::cout << " Number of Time Steps: " << uNumberOfTimeSteps << std::endl;
     std::cout << "       Time Step Size: " << dTimeStepSize << std::endl;

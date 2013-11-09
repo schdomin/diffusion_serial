@@ -36,9 +36,9 @@ CDomain::CDomain( const double& p_dDiffusionCoefficient,
     m_matCoefficients = new double*[3];
 
     //ds and for the 3 diagonals
-    m_matCoefficients[0] = new double[m_uNumberOfGridPoints1D-1]; //sup
-    m_matCoefficients[1] = new double[m_uNumberOfGridPoints1D];   //main
-    m_matCoefficients[2] = new double[m_uNumberOfGridPoints1D-1]; //sub
+    m_matCoefficients[0] = new double[m_uNumberOfGridPoints1D]; //sup
+    m_matCoefficients[1] = new double[m_uNumberOfGridPoints1D]; //main
+    m_matCoefficients[2] = new double[m_uNumberOfGridPoints1D]; //sub
 
     //ds initialize coefficients
     computeCoefficients( );
@@ -290,16 +290,14 @@ void CDomain::computeCoefficients( )
         m_matCoefficients[2][u] = -m_dDiffusionFactor;
     }
 
-    //ds sup diagonal: 1 .. n-1 size: n-1
+    //ds sup diagonal: 0 .. n-2 size: "n-1"
     m_matCoefficients[0][0]                         = 0.0;
-    m_matCoefficients[0][m_uNumberOfGridPoints1D-1] = 0.0;
 
     //main diagonal boundary condition
     m_matCoefficients[1][0]                         = 1.0;
     m_matCoefficients[1][m_uNumberOfGridPoints1D-1] = 1.0;
 
-    //ds sub diagonal: 0 .. n-2 size: n-1
-    m_matCoefficients[2][0]                         = 0.0;
+    //ds sub diagonal: 1 .. n-1 size: "n-1"
     m_matCoefficients[2][m_uNumberOfGridPoints1D-1] = 0.0;
 }
 
