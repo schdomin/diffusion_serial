@@ -1,4 +1,5 @@
 #include "CDomain.h"
+#include <math.h>    //ds fabs, etc.
 
 
 

@@ -2,8 +2,6 @@
 #define CDOMAIN_H_
 
 #include <fstream> //ds streaming to file for visualization
-#include <math.h>  //ds fabs, etc.
-#include <iostream>
 
 
 

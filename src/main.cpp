@@ -1,6 +1,8 @@
 #include "CDomain.h" //ds grid
 #include "Timer.h"   //ds time measurement
 #include <stdlib.h>  //ds atoi
+#include <math.h>    //ds sqrt, etc.
+#include <iostream>  //ds cout
 
 int main( int argc, char** argv )
 {
@@ -66,16 +68,6 @@ int main( int argc, char** argv )
             //ds update domain
             cDomain.updateHeatDistributionNumerical( );
         }
-
-        //ds stop timing
-        const double dDurationSeconds( tmTimer.stop( ) );
-
-        //ds cause an output ostream
-        std::cout << std::endl;
-        std::cout << "     Computation time: " << dDurationSeconds << std::endl;
-        std::cout << "-----------------------------------------------------------------------------" << std::endl;
-
-        return 0;
     }
     else
     {
@@ -109,15 +101,15 @@ int main( int argc, char** argv )
         //ds save the stream to a file
         cDomain.writeHeatGridToFile( "bin/simulation.txt", uNumberOfTimeSteps );
         cDomain.writeNormsToFile( "bin/norms.txt", uNumberOfTimeSteps, dTimeStepSize );
-
-        //ds stop timing
-        const double dDurationSeconds( tmTimer.stop( ) );
-
-        //ds cause an output ostream
-        std::cout << std::endl;
-        std::cout << "     Computation time: " << dDurationSeconds << std::endl;
-        std::cout << "-----------------------------------------------------------------------------" << std::endl;
-
-        return 0;
     }
+
+    //ds stop timing
+    const double dDurationSeconds( tmTimer.stop( ) );
+
+    //ds cause an output ostream
+    std::cout << std::endl;
+    std::cout << "     Computation time: " << dDurationSeconds << std::endl;
+    std::cout << "-----------------------------------------------------------------------------\n" << std::endl;
+
+    return 0;
 }
