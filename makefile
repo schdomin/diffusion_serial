@@ -2,7 +2,7 @@
 CC = g++
 
 #ds compiler flags
-CFLAGS = -c -Wall
+CFLAGS = -c
 
 #ds default field
 all: main
