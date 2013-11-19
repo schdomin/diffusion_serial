@@ -70,6 +70,13 @@ set( gcf, 'Renderer' ,'zbuffer' );
 % %ds for each remaining timestep
 for uCurrentTimestep = 2:1:uNumberOfTimesteps
     
+    if( 2000 == uCurrentTimestep )
+        
+        disp( 'waiting' );
+        pause( 3600 );
+        
+    end
+    
     %ds only save every 20th frame instead 500 -> 25 frames per sec
     if mod( uCurrentTimestep, 10 ) == 0
         

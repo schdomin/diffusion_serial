@@ -65,7 +65,7 @@ CDomain::~CDomain( )
 void CDomain::updateHeatDistributionNumerical( )
 {
     //ds STEP 1: loop over all rows (i and j are used to conform with exercise parameters)
-    for( unsigned int j = 0; j < m_uNumberOfGridPoints1D; ++j )
+    for( unsigned int j = 1; j < m_uNumberOfGridPoints1D-1; ++j )
     {
         //ds structures for implicit equation system (values set to 0 per default)
         double vecNewHeat[m_uNumberOfGridPoints1D];
@@ -87,16 +87,18 @@ void CDomain::updateHeatDistributionNumerical( )
 
         //ds compute the new heat
         solveMatrix( m_uNumberOfGridPoints1D, m_matCoefficients[2], m_matCoefficients[1], m_matCoefficients[0], vecPreviousHeat, vecNewHeat );
+        //solveMatrixFast( vecPreviousHeat, m_uNumberOfGridPoints1D, m_matCoefficients[2], m_matCoefficients[1], m_matCoefficients[0] );
 
         //ds set the values to the grid
         for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
         {
             m_gridHeat[u][j] = vecNewHeat[u];
+            //m_gridHeat[u][j] = vecPreviousHeat[u];
         }
     }
 
     //ds STEP 2: loop over all columns (i and j are used to conform with exercise parameters)
-    for( unsigned int i = 0; i < m_uNumberOfGridPoints1D; ++i )
+    for( unsigned int i = 1; i < m_uNumberOfGridPoints1D-1; ++i )
     {
         //ds structures for implicit equation system (values set to 0 per default)
         double vecNewHeat[m_uNumberOfGridPoints1D];
@@ -118,11 +120,13 @@ void CDomain::updateHeatDistributionNumerical( )
 
         //ds compute the new heat
         solveMatrix( m_uNumberOfGridPoints1D, m_matCoefficients[2], m_matCoefficients[1], m_matCoefficients[0], vecPreviousHeat, vecNewHeat );
+        //solveMatrixFast( vecPreviousHeat, m_uNumberOfGridPoints1D, m_matCoefficients[2], m_matCoefficients[1], m_matCoefficients[0] );
 
         //ds set the values to the grid
         for( unsigned int u = 0; u < m_uNumberOfGridPoints1D; ++u )
         {
             m_gridHeat[i][u] = vecNewHeat[u];
+            //m_gridHeat[i][u] = vecPreviousHeat[u];
         }
     }
 }
@@ -326,6 +330,37 @@ void CDomain::solveMatrix( int n, double *a, double *b, double *c, double *v, do
     {
         x[i] = ( v[i]-c[i] * x[i+1] )/b[i];
     }
+}
+
+//ds snippet from: http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm/Derivation#Implementation_in_C
+void CDomain::solveMatrixFast( double* x, const unsigned int N, const double* a, const double* b, const double* c )
+{
+    /* Allocate scratch space. */
+    double * cprime = new double[N];
+
+    if (!cprime) {
+        /* do something to handle error */
+    }
+
+    cprime[0] = c[0] / b[0];
+    x[0] = x[0] / b[0];
+
+    /* loop from 1 to N - 1 inclusive */
+    for( unsigned int u = 1; u < N; u++ )
+    {
+        double m = 1.0 / (b[u] - a[u] * cprime[u - 1]);
+        cprime[u] = c[u] * m;
+        x[u] = (x[u] - a[u] * x[u - 1]) * m;
+    }
+
+    /* loop from N - 2 to 0 inclusive, safely testing loop end condition */
+    for( unsigned int u = N - 1; u > 0; u-- )
+    {
+        x[u] = x[u] - cprime[u] * x[u + 1];
+    }
+
+    /* free scratch space */
+    delete[] cprime;
 }
 
 } //namespace Diffusion

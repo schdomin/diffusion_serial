@@ -61,6 +61,9 @@ private:
     //ds snippet from exercise sheet 1:1
     void solveMatrix( int n, double *a, double *b, double *c, double *v, double *x );
 
+    //ds snippet from internetz: keeps coefficients matrix constant - computeCoefficients must not be called after each use
+    void solveMatrixFast( double* x, const unsigned int N, const double* a, const double* b, const double* c );
+
 }; //class CDomain
 
 } //namespace Diffusion

@@ -56,32 +56,16 @@ ylabel( 'Heat' );
 legend( 'Total Heat' );
 
 hFigure2 = figure( 2 );
-plot( vecTimeline, vecLInfinity );
-title( 'Norm: Infinity' );
+plot( vecTimeline, vecLInfinity, vecTimeline, vecL1, vecTimeline, vecL2 );
+title( 'Norms' );
 xlabel( 'Time' );
 ylabel( 'Absolute Value' );
-legend( 'Norm: Infinity' );
-
-hFigure3 = figure( 3 );
-plot( vecTimeline, vecL1 );
-title( 'Norm: 1' );
-xlabel( 'Time' );
-ylabel( 'Absolute Value' );
-legend( 'Norm: 1' );
-
-hFigure4 = figure( 4 );
-plot( vecTimeline, vecL2 );
-title( 'Norm: 2' );
-xlabel( 'Time' );
-ylabel( 'Absolute Value' );
-legend( 'Norm: 2' );
+legend( 'Norm: Infinity', 'Norm: 1', 'Norm: 2' );
 
 disp( 'exporting figures as jpg' );
 
 saveas( hFigure1, 'totalheat.jpg' );
-saveas( hFigure2, 'norminfinity.jpg' );
-saveas( hFigure3, 'norm1.jpg' );
-saveas( hFigure4, 'norm2.jpg' );
+saveas( hFigure2, 'norms.jpg' );
 
 disp( 'function ended successfully' );
 
